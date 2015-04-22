@@ -179,4 +179,5 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets"></Import>
 </Project>
