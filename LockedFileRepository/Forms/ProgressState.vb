@@ -23,10 +23,16 @@ Public Class ProgressState
                         Dim c As New Counter
                         Try
                             Dim fileSize = Tools.GetFileSize(arg(0))
-                            Using crpt = fms.AddFile(arg(1), IIf(fileSize > FiftyMegaBytes, IIf(fileSize > OneGigaBytes,
-                                                                                              FileManageSystem.UsingZipEnum.SuperCompression,
-                                                                                              FileManageSystem.UsingZipEnum.True),
-                                                               FileManageSystem.UsingZipEnum.False))
+                            Using crpt = fms.AddFile(arg(1), Function() As FileManageSystem.UsingZipEnum
+                                                                 If fileSize > FiftyMegaBytes Then
+                                                                     If fileSize > OneGigaBytes Then
+                                                                         Return FileManageSystem.UsingZipEnum.False
+                                                                     End If
+                                                                     Return FileManageSystem.UsingZipEnum.True
+                                                                 Else
+                                                                     Return FileManageSystem.UsingZipEnum.False
+                                                                 End If
+                                                             End Function())
                                 Using file As New FileStream(arg(0), FileMode.Open, FileAccess.Read)
                                     SetProgress(ProgressSetMode.Part_Max, file.Length, ProgressSetValueMode.Abosulete)
                                     Dim bs As Byte()
