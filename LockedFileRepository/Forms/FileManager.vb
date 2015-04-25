@@ -153,6 +153,7 @@ ask2:
                 Process.Start(file)
             Catch ex As Exception
                 Tools.PrintExceptionD(ex)
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End Try
         End If
         UpdateFiles()
