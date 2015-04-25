@@ -149,7 +149,11 @@ ask2:
         Dim file = Path.Combine(Path.GetTempPath, sel.Text)
         q.Enqueue({file, sel.Text})
         If Not ProgressState.ShowDialog(ProgressState.ProgressMode.Decrypt, q) Then
-            Process.Start(file)
+            Try
+                Process.Start(file)
+            Catch ex As Exception
+                Tools.PrintExceptionD(ex)
+            End Try
         End If
         UpdateFiles()
     End Sub

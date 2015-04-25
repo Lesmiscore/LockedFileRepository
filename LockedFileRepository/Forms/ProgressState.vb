@@ -71,6 +71,9 @@ Public Class ProgressState
                         Try
                             Using crpt As CryptoStreamSelf = fms.GetFile(arg(1), False)
                                 Using bufs As New BufferedStream(crpt, 1000000)
+                                    If Not Directory.Exists(Path.GetFullPath(Path.Combine(arg(0), "../"))) Then
+                                        Directory.CreateDirectory(Path.GetFullPath(Path.Combine(arg(0), "../")))
+                                    End If
                                     Using file As New FileStream(arg(0), FileMode.Create, FileAccess.Write)
                                         SetProgress(ProgressSetMode.Part_Max, crpt.GetFileStream.Length, ProgressSetValueMode.Abosulete)
                                         Dim bs As Byte()
