@@ -23,9 +23,10 @@ Partial Public Class FileManager
             String())
         'ListBoxに追加する
         Dim q As New Queue(Of String())
-        For Each i In fileName
-            q.Enqueue({i, Path.GetFileName(i)})
-        Next
+        'For Each i In fileName
+        '    q.Enqueue({i, Path.GetFileName(i)})
+        'Next
+        FileCounter.ShowDialog(q, fileName)
         ProgressState.ShowDialog(ProgressState.ProgressMode.Encrypt, q)
         UpdateFiles()
     End Sub
