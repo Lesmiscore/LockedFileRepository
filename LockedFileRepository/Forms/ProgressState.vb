@@ -24,14 +24,15 @@ Public Class ProgressState
                         Try
                             Dim fileSize = Tools.GetFileSize(arg(0))
                             Using crpt = fms.AddFile(arg(1), Function() As FileManageSystem.UsingZipEnum
-                                                                 If fileSize > FiftyMegaBytes Then
-                                                                     If fileSize > OneGigaBytes Then
-                                                                         Return FileManageSystem.UsingZipEnum.False
-                                                                     End If
-                                                                     Return FileManageSystem.UsingZipEnum.True
-                                                                 Else
-                                                                     Return FileManageSystem.UsingZipEnum.False
-                                                                 End If
+                                                                 Return FileManageSystem.UsingZipEnum.False
+                                                                 'If fileSize > FiftyMegaBytes Then
+                                                                 '    If fileSize > OneGigaBytes Then
+                                                                 '        Return FileManageSystem.UsingZipEnum.False
+                                                                 '    End If
+                                                                 '    Return FileManageSystem.UsingZipEnum.True
+                                                                 'Else
+                                                                 '    Return FileManageSystem.UsingZipEnum.False
+                                                                 'End If
                                                              End Function())
                                 Using file As New FileStream(arg(0), FileMode.Open, FileAccess.Read)
                                     SetProgress(ProgressSetMode.Part_Max, file.Length, ProgressSetValueMode.Abosulete)
