@@ -7,6 +7,8 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LockedFileRepository", "Loc
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LockedFileRepositoryRemoting", "LockedFileRepositoryRemoting\LockedFileRepositoryRemoting.vbproj", "{B97D89A9-F014-4FE4-8831-74FD0BA87828}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LockedFileRepositoryConsole", "LockedFileRepositoryConsole\LockedFileRepositoryConsole.vbproj", "{C88CBD6E-EC42-41C8-8C81-AAF829E18F3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B97D89A9-F014-4FE4-8831-74FD0BA87828}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B97D89A9-F014-4FE4-8831-74FD0BA87828}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B97D89A9-F014-4FE4-8831-74FD0BA87828}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C88CBD6E-EC42-41C8-8C81-AAF829E18F3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C88CBD6E-EC42-41C8-8C81-AAF829E18F3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C88CBD6E-EC42-41C8-8C81-AAF829E18F3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C88CBD6E-EC42-41C8-8C81-AAF829E18F3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

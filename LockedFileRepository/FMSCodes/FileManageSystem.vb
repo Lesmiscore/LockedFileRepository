@@ -29,9 +29,6 @@ Public Class FileManageSystem
     Dim gfResult As CryptoStreamSelf = Nothing
     Public Shared Instance As FileManageSystem
     Public Sub New(password As String, Optional profilePath As String = Nothing)
-        If Instance IsNot Nothing Then
-            Throw New ArgumentException("インスタンスはすでに生成されています")
-        End If
         If profilePath = Nothing Then
             profilePath = Path.GetDirectoryName(Assembly.GetEntryAssembly.Location)
         End If
