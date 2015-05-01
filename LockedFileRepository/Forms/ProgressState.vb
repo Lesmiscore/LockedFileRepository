@@ -14,131 +14,133 @@ Public Class ProgressState
     Dim finished As Boolean = False
     Dim fms As FileManageSystem = FileManageSystem.Instance
     Private Sub Processor_DoWork(sender As Object, e As System.ComponentModel.DoWorkEventArgs) Handles Processor.DoWork
-        Try
-            Select Case mode
-                Case ProgressMode.Encrypt
-                    SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
-                    While args.Count <> 0 And Not Processor.CancellationPending
-                        Dim arg = args.Dequeue
-                        Dim c As New Counter
-                        Try
-                            Dim fileSize = Tools.GetFileSize(arg(0))
-                            Using crpt = fms.AddFile(arg(1), Function() As FileManageSystem.UsingZipEnum
-                                                                 Return FileManageSystem.UsingZipEnum.False
-                                                                 'If fileSize > FiftyMegaBytes Then
-                                                                 '    If fileSize > OneGigaBytes Then
-                                                                 '        Return FileManageSystem.UsingZipEnum.False
-                                                                 '    End If
-                                                                 '    Return FileManageSystem.UsingZipEnum.True
-                                                                 'Else
-                                                                 '    Return FileManageSystem.UsingZipEnum.False
-                                                                 'End If
-                                                             End Function())
-                                Using file As New FileStream(arg(0), FileMode.Open, FileAccess.Read)
-                                    SetProgress(ProgressSetMode.Part_Max, file.Length, ProgressSetValueMode.Abosulete)
-                                    Dim bs As Byte()
-                                    If fileSize < FiftyMegaBytes Then
-                                        bs = New Byte(TwentyKyroBytes - 1) {} '20KBずつ
-                                    Else
-                                        bs = New Byte(FiftyMegaBytes - 1) {} '50MBずつ
-                                    End If
-                                    Dim readLen As Integer
-                                    While True
-                                        SetProgress(arg(1))
-                                        readLen = file.Read(bs, 0, bs.Length)
-                                        Debug.WriteLine("Encrypt readLen:" & readLen & "/internalCount:" & c.BackIncrement(readLen))
-                                        If readLen = 0 Then
-                                            Exit While
-                                        End If
-                                        crpt.Write(bs, 0, readLen)
-                                        SetProgress(ProgressSetMode.Part_Val, readLen, ProgressSetValueMode.Relative)
-                                    End While
-                                    Erase bs
-                                End Using
-                            End Using
-                        Catch ex As Exception
-                            Tools.PrintException(ex)
-                            fms.DeleteFile(arg(1))
-                        End Try
-                        SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
-                        SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
-                    End While
-                Case ProgressMode.Decrypt
-                    SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
-                    While args.Count <> 0 And Not Processor.CancellationPending
-                        Dim arg = args.Dequeue
-                        Dim c As New Counter
-                        Try
-                            Using crpt As CryptoStreamSelf = fms.GetFile(arg(1), False)
-                                Using bufs As New BufferedStream(crpt, 1000000)
-                                    If Not Directory.Exists(Path.GetFullPath(Path.Combine(arg(0), "../"))) Then
-                                        Directory.CreateDirectory(Path.GetFullPath(Path.Combine(arg(0), "../")))
-                                    End If
-                                    Using file As New FileStream(arg(0), FileMode.Create, FileAccess.Write)
-                                        SetProgress(ProgressSetMode.Part_Max, crpt.GetFileStream.Length, ProgressSetValueMode.Abosulete)
+        SyncLock fms
+            Try
+                Select Case mode
+                    Case ProgressMode.Encrypt
+                        SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
+                        While args.Count <> 0 And Not Processor.CancellationPending
+                            Dim arg = args.Dequeue
+                            Dim c As New Counter
+                            Try
+                                Dim fileSize = Tools.GetFileSize(arg(0))
+                                Using crpt = fms.AddFile(arg(1), Function() As FileManageSystem.UsingZipEnum
+                                                                     Return FileManageSystem.UsingZipEnum.False
+                                                                     'If fileSize > FiftyMegaBytes Then
+                                                                     '    If fileSize > OneGigaBytes Then
+                                                                     '        Return FileManageSystem.UsingZipEnum.False
+                                                                     '    End If
+                                                                     '    Return FileManageSystem.UsingZipEnum.True
+                                                                     'Else
+                                                                     '    Return FileManageSystem.UsingZipEnum.False
+                                                                     'End If
+                                                                 End Function())
+                                    Using file As New FileStream(arg(0), FileMode.Open, FileAccess.Read)
+                                        SetProgress(ProgressSetMode.Part_Max, file.Length, ProgressSetValueMode.Abosulete)
                                         Dim bs As Byte()
-                                        If crpt.GetFileStream.Length < TwentyKyroBytes Then
+                                        If fileSize < FiftyMegaBytes Then
                                             bs = New Byte(TwentyKyroBytes - 1) {} '20KBずつ
                                         Else
                                             bs = New Byte(FiftyMegaBytes - 1) {} '50MBずつ
                                         End If
-                                        'fms.GetDisposePit.Add(bs)
                                         Dim readLen As Integer
                                         While True
-                                            SetProgress(ProgressSetMode.Part_Val, crpt.GetFileStream.Position, ProgressSetValueMode.Abosulete)
                                             SetProgress(arg(1))
-                                            readLen = bufs.Read(bs, 0, bs.Length)
-                                            Debug.WriteLine("Decrypt readLen:" & readLen & "/internalCount:" & c.BackIncrement(readLen))
+                                            readLen = file.Read(bs, 0, bs.Length)
+                                            Debug.WriteLine("Encrypt readLen:" & readLen & "/internalCount:" & c.BackIncrement(readLen))
                                             If readLen = 0 Then
                                                 Exit While
                                             End If
-                                            file.Write(bs, 0, readLen)
+                                            crpt.Write(bs, 0, readLen)
+                                            SetProgress(ProgressSetMode.Part_Val, readLen, ProgressSetValueMode.Relative)
                                         End While
                                         Erase bs
                                     End Using
                                 End Using
-                            End Using
-                        Catch ex As Exception
-                            Tools.PrintException(ex)
-                            'fms.DeleteFile(arg(1))
-                        End Try
-                        SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
-                        SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
-                    End While
-                Case ProgressMode.Delete
-                    SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
-                    While args.Count <> 0 And Not Processor.CancellationPending
-                        Dim arg = args.Dequeue
-                        SetProgress(arg(1))
-                        SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
-                        SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
-                        Try
-                            fms.DeleteFile(arg(1))
-                        Catch ex As Exception
-                            Tools.PrintException(ex)
-                        End Try
-                    End While
-                Case ProgressMode.Upgrade
-                    Dim tags = fms.GetXDocument.Root
-                    Dim entries = tags...<FileEntry>
-                    SetProgress(ProgressSetMode.All_Max, entries.Count + 1, ProgressSetValueMode.Abosulete)
-                    SetProgress(ProgressSetMode.Part_Max, entries.Count + 1, ProgressSetValueMode.Abosulete)
-                    SetProgress("プロファイルのルート")
-                    tags.@Version = FileManageSystem.ProfileVersion
-                    For Each i In entries
-                        SetProgress(i.@VirtualFile)
-                        SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
-                        SetProgress(ProgressSetMode.Part_Val, 1, ProgressSetValueMode.Abosulete)
-                        Dim zi = <UsingZip></UsingZip>
-                        zi.Value = False
-                        i.Add(zi)
-                    Next
-            End Select
-            fms.Commit() 'これを呼び出さないと変更が保存されない
-        Catch ex As Exception
-            Tools.PrintException(ex)
-            cancelled = True
-        End Try
+                            Catch ex As Exception
+                                Tools.PrintException(ex)
+                                fms.DeleteFile(arg(1))
+                            End Try
+                            SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
+                            SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
+                        End While
+                    Case ProgressMode.Decrypt
+                        SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
+                        While args.Count <> 0 And Not Processor.CancellationPending
+                            Dim arg = args.Dequeue
+                            Dim c As New Counter
+                            Try
+                                Using crpt As CryptoStreamSelf = fms.GetFile(arg(1), False)
+                                    Using bufs As New BufferedStream(crpt, 1000000)
+                                        If Not Directory.Exists(Path.GetFullPath(Path.Combine(arg(0), "../"))) Then
+                                            Directory.CreateDirectory(Path.GetFullPath(Path.Combine(arg(0), "../")))
+                                        End If
+                                        Using file As New FileStream(arg(0), FileMode.Create, FileAccess.Write)
+                                            SetProgress(ProgressSetMode.Part_Max, crpt.GetFileStream.Length, ProgressSetValueMode.Abosulete)
+                                            Dim bs As Byte()
+                                            If crpt.GetFileStream.Length < TwentyKyroBytes Then
+                                                bs = New Byte(TwentyKyroBytes - 1) {} '20KBずつ
+                                            Else
+                                                bs = New Byte(FiftyMegaBytes - 1) {} '50MBずつ
+                                            End If
+                                            'fms.GetDisposePit.Add(bs)
+                                            Dim readLen As Integer
+                                            While True
+                                                SetProgress(ProgressSetMode.Part_Val, crpt.GetFileStream.Position, ProgressSetValueMode.Abosulete)
+                                                SetProgress(arg(1))
+                                                readLen = bufs.Read(bs, 0, bs.Length)
+                                                Debug.WriteLine("Decrypt readLen:" & readLen & "/internalCount:" & c.BackIncrement(readLen))
+                                                If readLen = 0 Then
+                                                    Exit While
+                                                End If
+                                                file.Write(bs, 0, readLen)
+                                            End While
+                                            Erase bs
+                                        End Using
+                                    End Using
+                                End Using
+                            Catch ex As Exception
+                                Tools.PrintException(ex)
+                                'fms.DeleteFile(arg(1))
+                            End Try
+                            SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
+                            SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
+                        End While
+                    Case ProgressMode.Delete
+                        SetProgress(ProgressSetMode.All_Max, args.Count, ProgressSetValueMode.Abosulete)
+                        While args.Count <> 0 And Not Processor.CancellationPending
+                            Dim arg = args.Dequeue
+                            SetProgress(arg(1))
+                            SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
+                            SetProgress(ProgressSetMode.Part_Val, , ProgressSetValueMode.Abosulete)
+                            Try
+                                fms.DeleteFile(arg(1))
+                            Catch ex As Exception
+                                Tools.PrintException(ex)
+                            End Try
+                        End While
+                    Case ProgressMode.Upgrade
+                        Dim tags = fms.GetXDocument.Root
+                        Dim entries = tags...<FileEntry>
+                        SetProgress(ProgressSetMode.All_Max, entries.Count + 1, ProgressSetValueMode.Abosulete)
+                        SetProgress(ProgressSetMode.Part_Max, entries.Count + 1, ProgressSetValueMode.Abosulete)
+                        SetProgress("プロファイルのルート")
+                        tags.@Version = FileManageSystem.ProfileVersion
+                        For Each i In entries
+                            SetProgress(i.@VirtualFile)
+                            SetProgress(ProgressSetMode.All_Val, 1, ProgressSetValueMode.Relative)
+                            SetProgress(ProgressSetMode.Part_Val, 1, ProgressSetValueMode.Abosulete)
+                            Dim zi = <UsingZip></UsingZip>
+                            zi.Value = False
+                            i.Add(zi)
+                        Next
+                End Select
+                fms.Commit() 'これを呼び出さないと変更が保存されない
+            Catch ex As Exception
+                Tools.PrintException(ex)
+                cancelled = True
+            End Try
+        End SyncLock
     End Sub
     Private Sub SetProgress(psm As ProgressSetMode, Optional value As Decimal = 0, Optional setmode As ProgressSetValueMode = ProgressSetValueMode.Abosulete)
         Invoke(Sub()
@@ -205,6 +207,8 @@ Public Class ProgressState
     Private Sub ProgressState_Load(sender As Object, e As EventArgs) Handles Me.Load
         'While Processor.IsBusy
         'End While
-        Processor.RunWorkerAsync()
+        SyncLock fms
+            Processor.RunWorkerAsync()
+        End SyncLock
     End Sub
 End Class
