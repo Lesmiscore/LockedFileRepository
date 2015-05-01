@@ -1,18 +1,16 @@
-﻿Module Module1
+﻿Imports System.Threading
+
+Module Module1
     Dim repo As FileManageSystem
     Dim methods As IDictionary(Of String, Action(Of String())) = New Dictionary(Of String, Action(Of String()))
     Dim linkedText As IDictionary(Of String, String) = New Dictionary(Of String, String)
     Sub Main()
         methods("open") = Sub(args As String())
-                              Console.Write("Do you want speficy repository path?(Y/N)>")
-                              Dim rp As Char = CType(Console.Read(), String)(0)
                               Dim repPath As String = Nothing
-                              If "Yy".Contains(rp) Then
-                                  Console.Write("Type your repository path>")
-                                  repPath = Console.ReadLine()
+                              If args.Length >= 2 Then
+                                  repPath = args(1)
                               End If
-                              Console.Write("Type your password here>")
-                              Dim pw = Console.ReadLine()
+                              Dim pw = args(0)
                               repo = IIf(repPath = Nothing, New FileManageSystem(pw), New FileManageSystem(pw, repPath))
                               Console.WriteLine("Repository opened.")
                           End Sub
@@ -43,6 +41,11 @@
         methods("exit") = Sub(args As String())
                               Process.GetCurrentProcess.Kill()
                           End Sub
+        methods("files") = Sub(args As String())
+                               For Each i In repo.GetFiles
+
+                               Next
+                           End Sub
         While True
             Console.Write("LockedFileRepository>")
             Dim cmd = Console.ReadLine().Split(" "c)
